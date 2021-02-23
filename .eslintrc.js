@@ -7,7 +7,11 @@ module.exports = {
         parser: 'babel-eslint',
     },
     settings: {
-        'import/resolver': 'webpack',
+        'import/resolver': {
+            node: {
+                extensions: ['.js', '.jsx', '.ts', '.tsx', '.json', '.vue'],
+            },
+        },
     },
     extends: [
         'eslint:recommended',
