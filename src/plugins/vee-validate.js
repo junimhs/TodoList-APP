@@ -4,10 +4,10 @@ import { messages as messagePt } from 'vee-validate/dist/locale/pt_BR';
 
 extend('required', {
     ...required,
-    message: messagePt.required
+    message: messagePt.required,
 });
 
 extend('email', {
     ...email,
-    message: messagePt.email
+    message: messagePt.email,
 });
