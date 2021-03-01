@@ -2,6 +2,11 @@
     <div style="height: 300px;">
         <LoginMenu />
 
+        <Message
+            v-if="response.message"
+            :color="response.color"
+            :message="response.message"
+        />
         <ValidationObserver
             tag="form"
             ref="loginForm"
@@ -48,8 +53,14 @@
 
                 <button
                     type="submit"
+                    :disabled="spinner.login"
                     class="flex items-center justify-center bg-blue-800 text-blue-200 font-medium text-sm focus:outline-none rounded-sm py-3 px-4 block w-full appearance-none leading-normal"
                 >
+                    <img
+                        v-if="spinner.login"
+                        src="../assets/img/spinner.svg"
+                        class="h-5 w-5"
+                    >
                     ENTRAR
                 </button>
 
@@ -68,8 +79,10 @@
 
 <script>
     import LoginMenu from '../components/Auth/LoginMenu';
+    import Message from '../components/Partials/Message';
     import Cookie from 'js-cookie';
     import { ValidationObserver, ValidationProvider } from 'vee-validate';
+    import message from '../utils/message';
 
     export default {
         name: 'Login',
@@ -78,12 +91,20 @@
             LoginMenu,
             ValidationObserver,
             ValidationProvider,
+            Message,
         },
 
         data() {
             return {
-                'email': '',
-                'password': '',
+                email: '',
+                password: '',
+                response: {
+                    color: '',
+                    message: '',
+                },
+                spinner: {
+                    login: false,
+                },
             };
         },
         methods: {
@@ -97,12 +118,25 @@
                     'password': this.password,
                 };
 
+                this.resetResponse();
+                this.spinner.login = true;
+
                 this.$axios.post('v1/login', payload).then((response) => {
                     const token = `${response.data.token_type} ${response.data.access_token}`;
                     Cookie.set('_todolist_token', token, { expires: 30 });
 
                     this.$store.commit('user/STORE_USER', response.data.data);
+                }).catch((e) => {
+                    const errorCode = e?.response?.data?.error || 'ServeError';
+                    this.response.color = 'red';
+                    this.response.message = message[errorCode];
+                }).finally(() => {
+                    this.spinner.login = false;
                 });
+            },
+            resetResponse() {
+                this.response.color = '';
+                this.response.message = '';
             },
         },
     };
