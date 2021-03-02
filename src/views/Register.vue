@@ -1,5 +1,5 @@
 <template>
-    <div style="height: 300px;">
+    <div style="height: 300px">
         <LoginMenu />
 
         <Message
@@ -8,14 +8,44 @@
             :message="response.message"
         />
         <ValidationObserver
+            ref="registerForm"
             tag="form"
-            ref="loginForm"
-            @submit.stop.prevent="login"
+            @submit.stop.prevent="register"
         >
             <div class="grid gap-2">
+                <div class="flex">
+                    <div class="w-1/2 mr-2">
+                        <ValidationProvider
+                            name="Primeiro nome"
+                            v-slot="{ errors }"
+                            rules="required"
+                        >
+                            <input
+                                v-model="first_name"
+                                type="text"
+                                placeholder="Digite seu primeiro nome"
+                                class="bg-gray-900 placeholder-gray-700 text-gray-500 font-light border border-gray-900 focus:outline-none focus:border-blue-800 rounded-sm py-3 px-4 block w-full appearance-none leading-normal"
+                            >
+
+                            <div
+                                v-if="!!errors[0]"
+                                class="text-red-500 text-sm mb-2"
+                            >
+                                {{ errors[0] }}
+                            </div>
+                        </ValidationProvider>
+                    </div>
+                    <div class="w-1/2 ml-2">
+                        <input
+                            type="text"
+                            placeholder="Digite seu sobrenome"
+                            class="bg-gray-900 placeholder-gray-700 text-gray-500 font-light border border-gray-900 focus:outline-none focus:border-blue-800 rounded-sm py-3 px-4 block w-full appearance-none leading-normal"
+                        >
+                    </div>
+                </div>
                 <ValidationProvider
-                    v-slot="{ errors }"
                     name="E-mail"
+                    v-slot="{ errors }"
                     rules="required|email"
                 >
                     <input
@@ -26,16 +56,15 @@
                     >
                     <div
                         v-if="!!errors[0]"
-                        class="text-red-500 text-sm mb-2 mt-1"
+                        class="text-red-500 text-sm mb-2"
                     >
                         {{ errors[0] }}
                     </div>
                 </ValidationProvider>
-
                 <ValidationProvider
                     v-slot="{ errors }"
+                    :rules="{ required: true, regex: /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).+$/ }"
                     name="Senha"
-                    rules="required"
                 >
                     <input
                         v-model="password"
@@ -45,33 +74,23 @@
                     >
                     <div
                         v-if="!!errors[0]"
-                        class="text-red-500 text-sm mb-2 mt-1"
+                        class="text-red-500 text-sm mb-2"
                     >
                         {{ errors[0] }}
                     </div>
                 </ValidationProvider>
-
                 <button
                     type="submit"
-                    :disabled="spinner.login"
+                    :disabled="spinner.register"
                     class="flex items-center justify-center bg-blue-800 text-blue-200 font-medium text-sm focus:outline-none rounded-sm py-3 px-4 block w-full appearance-none leading-normal"
                 >
                     <img
-                        v-if="spinner.login"
+                        v-if="spinner.register"
                         src="@/assets/img/spinner.svg"
                         class="h-5 w-5"
                     >
-                    ENTRAR
+                    REGISTRAR
                 </button>
-
-                <div class="my-4 text-center">
-                    <RouterLink
-                        :to="{name: 'forgot-password'}"
-                        class="text-sm font-light"
-                    >
-                        Esqueci minha senha
-                    </RouterLink>
-                </div>
             </div>
         </ValidationObserver>
     </div>
@@ -80,22 +99,21 @@
 <script>
     import LoginMenu from '@/components/Auth/LoginMenu';
     import Message from '@/components/Partials/Message';
-    import Cookie from 'js-cookie';
-    import { ValidationObserver, ValidationProvider } from 'vee-validate';
     import message from '@/utils/message';
+    import {ValidationObserver, ValidationProvider} from 'vee-validate';
 
     export default {
-        name: 'Login',
-
+        name: 'Register',
         components: {
             LoginMenu,
             ValidationObserver,
             ValidationProvider,
             Message,
         },
-
         data() {
             return {
+                first_name: '',
+                last_name: '',
                 email: '',
                 password: '',
                 response: {
@@ -103,40 +121,49 @@
                     message: '',
                 },
                 spinner: {
-                    login: false,
+                    register: false,
                 },
             };
         },
         methods: {
-            async login() {
-                const validate = await this.$refs.loginForm.validate();
+            async register() {
+                const validate = await this.$refs.registerForm.validate();
 
                 if(!validate) return;
 
+                this.resetResponse();
+
                 const payload = {
-                    'email': this.email,
-                    'password': this.password,
+                    first_name: this.first_name,
+                    last_name: this.last_name,
+                    email: this.email,
+                    password: this.password,
                 };
 
-                this.resetResponse();
-                this.spinner.login = true;
+                this.spinner.register = true;
 
-                this.$axios.post('v1/login', payload).then((response) => {
-                    const token = `${response.data.token_type} ${response.data.access_token}`;
-                    Cookie.set('_todolist_token', token, { expires: 30 });
-
-                    this.$store.commit('user/STORE_USER', response.data.data);
+                this.$axios.post('v1/register', payload).then(() => {
+                    this.response.color = 'green';
+                    this.response.message = 'Seu cadastrado foi feito com sucesso.';
+                    this.resetForm();
                 }).catch((e) => {
                     const errorCode = e?.response?.data?.error || 'ServeError';
                     this.response.color = 'red';
                     this.response.message = message[errorCode];
                 }).finally(() => {
-                    this.spinner.login = false;
+                    this.spinner.register = false;
                 });
             },
             resetResponse() {
                 this.response.color = '';
                 this.response.message = '';
+            },
+            resetForm() {
+                this.first_name = '';
+                this.last_name = '';
+                this.email = '';
+                this.password = '';
+                this.$refs.registerForm.reset();
             },
         },
     };

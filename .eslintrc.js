@@ -45,6 +45,6 @@ module.exports = {
         }],
         'import/no-absolute-path': 'error',
         'import/newline-after-import': 'error',
-        'import/no-unresolved': ['error'],
+        'import/no-unresolved': 'off',
     },
 };

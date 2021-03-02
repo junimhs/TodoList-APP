@@ -10,6 +10,15 @@
 <script>
     export default {
         name: 'Message',
-        props: ['color', 'message'],
+        props: {
+            color: {
+                type: String,
+                default: '',
+            },
+            message: {
+                type: String,
+                default: '',
+            },
+        },
     };
 </script>
