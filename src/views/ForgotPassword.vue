@@ -1,16 +1,19 @@
 <template>
-    <div style="height: 300px;">
-        <LoginMenu />
+    <div>
+        <h3 class="py-2 mb-4 text-gray-500 text-lg font-medium text-center">
+            Esqueci minha senha
+        </h3>
 
         <Message
             v-if="response.message"
             :color="response.color"
             :message="response.message"
         />
+
         <ValidationObserver
+            ref="forgotPasswordForm"
             tag="form"
-            ref="loginForm"
-            @submit.stop.prevent="login"
+            @submit.stop.prevent="forgotPassword"
         >
             <div class="grid gap-2">
                 <ValidationProvider
@@ -20,27 +23,8 @@
                 >
                     <input
                         v-model="email"
-                        type="text"
+                        type="email"
                         placeholder="Digite seu e-mail"
-                        class="bg-gray-900 placeholder-gray-700 text-gray-500 font-light border border-gray-900 focus:outline-none focus:border-blue-800 rounded-sm py-3 px-4 block w-full appearance-none leading-normal"
-                    >
-                    <div
-                        v-if="!!errors[0]"
-                        class="text-red-500 text-sm mb-2 mt-1"
-                    >
-                        {{ errors[0] }}
-                    </div>
-                </ValidationProvider>
-
-                <ValidationProvider
-                    v-slot="{ errors }"
-                    name="Senha"
-                    rules="required"
-                >
-                    <input
-                        v-model="password"
-                        type="password"
-                        placeholder="Digite sua senha"
                         class="bg-gray-900 placeholder-gray-700 text-gray-500 font-light border border-gray-900 focus:outline-none focus:border-blue-800 rounded-sm py-3 px-4 block w-full appearance-none leading-normal"
                     >
                     <div
@@ -53,23 +37,25 @@
 
                 <button
                     type="submit"
-                    :disabled="spinner.login"
+                    :disabled="spinner.forgot_password"
                     class="flex items-center justify-center bg-blue-800 text-blue-200 font-medium text-sm focus:outline-none rounded-sm py-3 px-4 block w-full appearance-none leading-normal"
                 >
                     <img
-                        v-if="spinner.login"
+                        v-if="spinner.forgot_password"
                         src="@/assets/img/spinner.svg"
-                        class="h-5 w-5"
+                        alt=""
+                        class="w-5 h-5 mr-2"
                     >
-                    ENTRAR
+
+                    RECUPERAR SENHA
                 </button>
 
                 <div class="my-4 text-center">
                     <RouterLink
-                        :to="{name: 'forgotPassword'}"
+                        :to="{ name: 'login' }"
                         class="text-sm font-light"
                     >
-                        Esqueci minha senha
+                        Login
                     </RouterLink>
                 </div>
             </div>
@@ -78,65 +64,58 @@
 </template>
 
 <script>
-    import LoginMenu from '@/components/Auth/LoginMenu';
     import Message from '@/components/Partials/Message';
-    import Cookie from 'js-cookie';
     import { ValidationObserver, ValidationProvider } from 'vee-validate';
     import message from '@/utils/message';
 
     export default {
-        name: 'Login',
-
+        name: 'ForgotPassword',
         components: {
-            LoginMenu,
+            Message,
             ValidationObserver,
             ValidationProvider,
-            Message,
         },
-
         data() {
             return {
                 email: '',
-                password: '',
+                spinner: {
+                    forgot_password: false,
+                },
                 response: {
                     color: '',
                     message: '',
                 },
-                spinner: {
-                    login: false,
-                },
             };
         },
         methods: {
-            async login() {
-                const validate = await this.$refs.loginForm.validate();
-
-                if(!validate) return;
-
-                const payload = {
-                    'email': this.email,
-                    'password': this.password,
-                };
+            async forgotPassword() {
+                const validated = this.$refs.forgotPasswordForm.validate();
+                if(!validated) return;
 
                 this.resetResponse();
-                this.spinner.login = true;
 
-                this.$axios.post('v1/login', payload).then((response) => {
-                    const token = `${response.data.token_type} ${response.data.access_token}`;
-                    Cookie.set('_todolist_token', token, { expires: 30 });
-
-                    this.$store.commit('user/STORE_USER', response.data.data);
+                this.spinner.forgot_password = true;
+                this.$axios.post('v1/forgot-password', { email: this.email }).then(() => {
+                    this.response.color = 'green';
+                    this.response.message = 'E-mail de recuperação enviado com sucesso.';
+                    this.resetForm();
                 }).catch((e) => {
                     const errorCode = e?.response?.data?.error || 'ServeError';
                     this.response.color = 'red';
                     this.response.message = message[errorCode];
                 }).finally(() => {
-                    this.spinner.login = false;
+                    this.spinner.forgot_password = false;
                 });
             },
+
             resetResponse() {
                 this.response.color = '';
                 this.response.message = '';
+            },
+
+            resetForm() {
+                this.email = '';
+                this.$refs.forgotPasswordForm.reset();
             },
         },
     };
