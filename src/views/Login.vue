@@ -126,6 +126,7 @@
                     Cookie.set('_todolist_token', token, { expires: 30 });
 
                     this.$store.commit('user/STORE_USER', response.data.data);
+                    this.$router.push({ name: 'home' });
                 }).catch((e) => {
                     const errorCode = e?.response?.data?.error || 'ServeError';
                     this.response.color = 'red';

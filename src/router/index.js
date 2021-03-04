@@ -6,12 +6,23 @@ import Register from '@/views/Register';
 import VerifyEmail from '@/views/VerifyEmail';
 import ForgotPassword from '@/views/ForgotPassword';
 import ResetPassword from '@/views/ResetPassword';
+import DefaultLayout from '@/layouts/Default';
+import Home from '@/views/Home';
+import Guard from '@/services/middleware';
 
 Vue.use(VueRouter);
 
 const routes = [
   {
+    path: '/', component: DefaultLayout,
+    beforeEnter: Guard.requiredIfNotAuthenticate,
+    children: [
+      { path: '', name: 'home', component: Home },
+    ],
+  },
+  {
     path: '/login', component: LayoutAuth,
+    beforeEnter: Guard.requiredIfAuthenticate,
     children: [
       { path: '', name: 'login', component: Login },
     ],
