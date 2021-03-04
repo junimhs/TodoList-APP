@@ -5,4 +5,6 @@ export default {
     VerifyEmailTokenException: 'Ops! Parece que este token está invalido.',
     UserNotExistsException: 'Ops! Parece que o e-mail não existe.',
     ForgotPasswordExistsException: 'Ops! Já foi solicitado a recuperação de senha, aguarde 1 hora para solicitar novamente.',
+    TokenResetPasswordExpiredException: 'Ops! Esse token já expirou.',
+    TokenResetPasswordInvalidException: 'Ops! Esse token é invalido',
 };

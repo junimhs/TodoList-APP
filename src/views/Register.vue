@@ -63,7 +63,7 @@
                 </ValidationProvider>
                 <ValidationProvider
                     v-slot="{ errors }"
-                    :rules="{ required: true, regex: /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).+$/ }"
+                    :rules="{ required: true, min: 8 , regex: /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).+$/ }"
                     name="Senha"
                 >
                     <input
