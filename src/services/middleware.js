@@ -1,24 +1,28 @@
-import Cookie from 'js-cookie';
+import Cookie from '@/services/cookie';
+import axios from 'axios';
 
 export default {
     requiredIfAuthenticate(to, from, next) {
-        const token = Cookie.get('_todolist_token');
+        const token = Cookie.getToken();
         let n;
         if(token) {
             n = { name: 'home' };
         }
-
-        // Checar se o token esta invalido
-
         next(n);
     },
 
-    requiredIfNotAuthenticate(to, from, next) {
-        const token = Cookie.get('_todolist_token');
+    async requiredIfNotAuthenticate(to, from, next) {
+        const token = Cookie.getToken;
         let n;
         if(!token) {
             n = { name: 'login' };
         }
+
+        // Checar se o token esta invalido
+        await axios.get('v1/me').catch(() => {
+            Cookie.deleteToken();
+            next({ name: 'login' });
+        });
 
         next(n);
     },
