@@ -10,6 +10,7 @@ import DefaultLayout from '@/layouts/Default';
 import Home from '@/views/Home';
 import Guard from '@/services/middleware';
 import Profile from '@/views/Profile';
+import TodoTask from '@/views/TodoTask';
 
 Vue.use(VueRouter);
 
@@ -20,6 +21,7 @@ const routes = [
     children: [
       { path: '', name: 'home', component: Home },
       { path: 'perfil', name: 'profile', component: Profile },
+      { path: 'todo/:id', name: 'todo', component: TodoTask },
     ],
   },
   {

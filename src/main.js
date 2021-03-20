@@ -6,6 +6,9 @@ import './plugins/vee-validate';
 import './plugins/axios';
 
 import './assets/css/tailwind.css';
+import VueObserveVisibility from 'vue-observe-visibility';
+
+Vue.use(VueObserveVisibility);
 
 
 Vue.config.productionTip = false;
